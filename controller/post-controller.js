@@ -50,7 +50,7 @@ export const getAllPosts = async (request, response) => {
         
         }
 
-        return response.status(200).json({resultData,statusCode :200});
+        return response.status(200).json({...resultData,statusCode :200});
     } catch (error) {
         return response.status(500).json({ statusCode:500,error:err.message })
     }
