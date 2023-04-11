@@ -16,13 +16,13 @@ export const singupUser = async (req, res) => {
     if (!name || !age || !email || !password)
         return res
             .status(400)
-            .json({ error: `Please enter all the required field.` });
+            .json({statusCode:400, error: `Please enter all the required field.` });
 
     // name validation.
     if (name.length > 25)
         return res
             .status(400)
-            .json({ error: "name can only be less than 25 characters" });
+            .json({statusCode:400, error: "name can only be less than 25 characters" });
 
     // email validation.
     const emailReg =
@@ -31,18 +31,19 @@ export const singupUser = async (req, res) => {
     if (!emailReg.test(email))
         return res
             .status(400)
-            .json({ error: "please enter a valid email address." });
+            .json({statusCode:400, error: "please enter a valid email address." });
 
     // validation of password.
     if (password.length < 6)
         return res
             .status(400)
-            .json({ error: "password must be atleast 6 characters long" });
+            .json({statusCode:400, error: "password must be atleast 6 characters long" });
     try {
         const doesUserAlreadyExist = await User.findOne({ email });
 
         if (doesUserAlreadyExist)
             return res.status(400).json({
+                statusCode:400,
                 error: `a user with that email [${email}] already exists so please try another one.`,
             });
 
@@ -52,12 +53,24 @@ export const singupUser = async (req, res) => {
         // save the user.
         const result = await newUser.save();
 
+       
+
+
+
         result._doc.password = undefined;
 
-        return res.status(201).json({ ...result._doc });
+        const resultData={
+            statusCode:null,
+            data:{
+             data:result._doc
+            }
+        
+        }
+
+        return res.status(201).json({ ...resultData,statusCode:201 });
     } catch (err) {
         console.log(err);
-        return res.status(500).json({ error: err.message });
+        return res.status(500).json({statusCode:500, error: err.message });
     }
 };
 
@@ -68,7 +81,7 @@ export const loginUser = async (req, res) => {
     if (!email || !password)
         return res
             .status(400)
-            .json({ error: "please enter all the required fields!" });
+            .json({statusCode:400, error: "please enter all the required fields!" });
 
     // email validation.
     const emailReg =
@@ -77,13 +90,13 @@ export const loginUser = async (req, res) => {
     if (!emailReg.test(email))
         return res
             .status(400)
-            .json({ error: "please enter a valid email address." });
+            .json({statusCode:400, error: "please enter a valid email address." });
 
     try {
         const doesUserExits = await User.findOne({ email });
 
         if (!doesUserExits)
-            return res.status(400).json({ error: "Invalid email or password!" });
+            return res.status(400).json({statusCode:400, error: "Invalid email or password!" });
 
         // if there were any user present.
         const doesPasswordMatch = await bcrypt.compare(
@@ -92,7 +105,7 @@ export const loginUser = async (req, res) => {
         );
 
         if (!doesPasswordMatch)
-            return res.status(400).json({ error: "Invalid email or password!" });
+            return res.status(400).json({statusCode:400, error: "Invalid email or password!" });
 
         const payload = { _id: doesUserExits._id };
         const token = jwt.sign(payload, process.env.ACCESS_SECRET_KEY, {
@@ -100,10 +113,23 @@ export const loginUser = async (req, res) => {
         });
 
         const user = { ...doesUserExits._doc, password: undefined };
-        return res.status(200).json({ token, user });
+         
+        const resultData={
+            statusCode:null,
+            data:{
+
+             data:user,
+             token
+            }
+        
+        }
+
+
+
+        return res.status(200).json({ ...resultData,statusCode:200});
     } catch (err) {
-        console.log(err);
-        return res.status(500).json({ error: err.message });
+        // console.log(err);
+        return res.status(500).json({ statusCode:500, error: err.message });
     }
 }
 
@@ -114,7 +140,7 @@ export const loginUser = async (req, res) => {
 export const updateProfile = async (req, res) => {
     const id = req.params.userId;
 
-    if (!id) return res.status(400).json({ error: "no id specified." });
+    if (!id) return res.status(400).json({statusCode:400, error: "no id specified." });
 
     try {
 
@@ -123,8 +149,19 @@ export const updateProfile = async (req, res) => {
             new: true,
         });
 
-        return res.status(200).json({ ...result._doc });
+        const resultData={
+            statusCode:null,
+            data:{
+
+             data:result,
+            
+            }
+        
+        }
+
+        return res.status(200).json({ ...resultData,statusCode: 200});
     } catch (err) {
-        console.log(err);
+
+        console.log({statusCode:500,error:err.message});
     }
 }

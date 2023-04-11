@@ -14,9 +14,20 @@ export const createPost = async (req, res) => {
         });
         const result = await newPost.save();
 
-        return res.status(201).json({ ...result._doc });
+        
+        const resultData={
+            statusCode:null,
+            data:{
+
+             data:result,
+            
+            }
+        
+        }
+
+        return res.status(201).json({ ...resultData,statusCode:201 });
     } catch (err) {
-        console.log(err);
+        console.log({statusCode:500,error:err.message});
     }
 }
 
@@ -29,12 +40,18 @@ export const getAllPosts = async (request, response) => {
     try {
 
         const posts = await Post.find().populate("postedBy");
-        let result = {
-            posts: posts
+        const resultData={
+            statusCode:null,
+            data:{
+
+             data:posts,
+            
+            }
+        
         }
 
-        return response.status(200).json(result);
+        return response.status(200).json({resultData,statusCode :200});
     } catch (error) {
-        return response.status(500).json({ error })
+        return response.status(500).json({ statusCode:500,error:err.message })
     }
 }
